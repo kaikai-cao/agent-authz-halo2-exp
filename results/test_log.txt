@@ -1,0 +1,72 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.22s
+     Running unittests src\lib.rs (target\debug\deps\agent_authz_halo2_exp-d673e78f01d11a4f.exe)
+
+running 5 tests
+test registry::tests::builder_rejects_bad_input ... ok
+test poseidon_hash::tests::labels_are_distinct_and_deterministic ... ok
+test registry::tests::tampered_path_is_rejected ... ok
+test reference::tests::reference_decisions_match_fixed_scenario ... ok
+test registry::tests::fixed_registry_opens_both_paths ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running unittests src\bin\benchmark.rs (target\debug\deps\benchmark-130caf13b955f14c.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\test_mock_prover.rs (target\debug\deps\test_mock_prover-23dab475bc0610d5.exe)
+
+running 13 tests
+test instance_layout_has_five_public_values ... ok
+test t10_grant_merkle_path_tampered_rejected ... ok
+test t7_request_action_outside_scope_rejected ... ok
+test t4_child_parent_id_tampered_rejected ... ok
+test t6_child_scope_exceeds_parent_rejected ... ok
+test t3_after_revoking_g1_g2_g4_accepted ... ok
+test t1_before_revocation_g1_g3_accepted ... ok
+test t5_issuer_continuity_violated_rejected ... ok
+test t8_expired_grant_rejected ... ok
+test t9_request_before_valid_from_rejected ... ok
+test t2_revoked_g1_g3_rejected ... ok
+test t12_request_digest_tampered_rejected ... ok
+test t11_revocation_path_or_bit_tampered_rejected ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.31s
+
+     Running tests\test_poseidon_consistency.rs (target\debug\deps\test_poseidon_consistency-a6a720ed7cdc75f6.exe)
+
+running 4 tests
+test domain_separated_leaves_do_not_collide ... ok
+test gadget_and_off_circuit_poseidon_agree ... ok
+test sparse_registry_slots_open_correctly ... ok
+test registry_roots_and_paths_are_consistent ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests\test_proof_roundtrip.rs (target\debug\deps\test_proof_roundtrip-ed3480b754242868.exe)
+
+running 2 tests
+test t1_real_proof_before_revocation has been running for over 60 seconds
+test t3_real_proof_after_revoking_g1 has been running for over 60 seconds
+test t1_real_proof_before_revocation ... ok
+test t3_real_proof_after_revoking_g1 ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 121.73s
+
+     Running tests\test_reference.rs (target\debug\deps\test_reference-beaf30b1f5741d66.exe)
+
+running 4 tests
+test reference_local_rules_reject_each_tamper ... ok
+test reference_revocation_and_request_action_are_checked ... ok
+test reference_never_claims_deny_completeness ... ok
+test reference_revocation_scenario_matches_task_spec ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+   Doc-tests agent_authz_halo2_exp
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

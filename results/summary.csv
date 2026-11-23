@@ -1,0 +1,53 @@
+﻿section,id,item,expected,observed,result,mean,median,p95,samples
+attack,T1,撤销前 g1+g3,通过,接受,PASS,,,,
+attack,T2,撤销 g1 后仍用 g1+g3,拒绝,拒绝,PASS,,,,
+attack,T3,撤销 g1 后改用 g2+g4,通过,接受,PASS,,,,
+attack,T4,子授权 parent_id 被篡改,拒绝,拒绝,PASS,,,,
+attack,T5,issuer 不等于父授权 subject,拒绝,拒绝,PASS,,,,
+attack,T6,子权限超出父权限,拒绝,拒绝,PASS,,,,
+attack,T7,请求动作不在 scope 中,拒绝,拒绝,PASS,,,,
+attack,T8,授权过期,拒绝,拒绝,PASS,,,,
+attack,T9,请求时间早于生效时间,拒绝,拒绝,PASS,,,,
+attack,T10,Grant Merkle path 被篡改,拒绝,拒绝,PASS,,,,
+attack,T11,Revocation path 或状态位被篡改,拒绝,拒绝,PASS,,,,
+attack,T12,requestDigest 被篡改,拒绝,拒绝,PASS,,,,
+performance,threads_1/records_12,Params::new 参数生成 (ms),,,OK,2918.199,2945.948,2982.913,10
+performance,threads_1/records_12,keygen_vk + keygen_pk (ms),,,OK,1573.013,1562.773,1635.139,10
+performance,threads_1/records_12,create_proof 真实证明生成 (ms),,,OK,2045.339,2043.186,2118.003,10
+performance,threads_1/records_12,verify_proof 真实证明验证 (ms),,,OK,46.703,45.354,55.779,10
+performance,threads_1/records_12,proof_bytes (bytes),,,OK,5824,,,10
+performance,threads_1/records_4,Params::new 参数生成 (ms),,,OK,2932.631,2928.350,3015.878,10
+performance,threads_1/records_4,keygen_vk + keygen_pk (ms),,,OK,1604.345,1603.584,1621.866,10
+performance,threads_1/records_4,create_proof 真实证明生成 (ms),,,OK,2104.510,2101.429,2131.144,10
+performance,threads_1/records_4,verify_proof 真实证明验证 (ms),,,OK,47.247,47.105,48.090,10
+performance,threads_1/records_4,proof_bytes (bytes),,,OK,5824,,,10
+performance,threads_1/records_6,Params::new 参数生成 (ms),,,OK,2927.333,2929.352,2996.044,10
+performance,threads_1/records_6,keygen_vk + keygen_pk (ms),,,OK,1610.135,1600.468,1685.624,10
+performance,threads_1/records_6,create_proof 真实证明生成 (ms),,,OK,2120.783,2111.021,2195.163,10
+performance,threads_1/records_6,verify_proof 真实证明验证 (ms),,,OK,47.370,47.231,49.353,10
+performance,threads_1/records_6,proof_bytes (bytes),,,OK,5824,,,10
+performance,threads_1/records_8,Params::new 参数生成 (ms),,,OK,2904.618,2898.527,2962.408,10
+performance,threads_1/records_8,keygen_vk + keygen_pk (ms),,,OK,1608.606,1612.119,1645.411,10
+performance,threads_1/records_8,create_proof 真实证明生成 (ms),,,OK,2091.131,2095.394,2119.997,10
+performance,threads_1/records_8,verify_proof 真实证明验证 (ms),,,OK,46.586,46.730,47.780,10
+performance,threads_1/records_8,proof_bytes (bytes),,,OK,5824,,,10
+performance,threads_8/records_12,Params::new 参数生成 (ms),,,OK,2928.284,2922.477,3090.199,10
+performance,threads_8/records_12,keygen_vk + keygen_pk (ms),,,OK,1595.562,1590.218,1643.415,10
+performance,threads_8/records_12,create_proof 真实证明生成 (ms),,,OK,2060.224,2068.176,2118.736,10
+performance,threads_8/records_12,verify_proof 真实证明验证 (ms),,,OK,46.433,45.829,53.457,10
+performance,threads_8/records_12,proof_bytes (bytes),,,OK,5824,,,10
+performance,threads_8/records_4,Params::new 参数生成 (ms),,,OK,2921.848,2926.638,2959.769,10
+performance,threads_8/records_4,keygen_vk + keygen_pk (ms),,,OK,1624.010,1621.283,1670.469,10
+performance,threads_8/records_4,create_proof 真实证明生成 (ms),,,OK,2105.132,2100.511,2150.682,10
+performance,threads_8/records_4,verify_proof 真实证明验证 (ms),,,OK,49.154,47.463,59.625,10
+performance,threads_8/records_4,proof_bytes (bytes),,,OK,5824,,,10
+performance,threads_8/records_6,Params::new 参数生成 (ms),,,OK,2875.222,2865.662,2971.238,10
+performance,threads_8/records_6,keygen_vk + keygen_pk (ms),,,OK,1591.086,1590.153,1622.930,10
+performance,threads_8/records_6,create_proof 真实证明生成 (ms),,,OK,2072.016,2066.240,2186.815,10
+performance,threads_8/records_6,verify_proof 真实证明验证 (ms),,,OK,47.044,46.379,54.258,10
+performance,threads_8/records_6,proof_bytes (bytes),,,OK,5824,,,10
+performance,threads_8/records_8,Params::new 参数生成 (ms),,,OK,2907.844,2883.125,3037.107,10
+performance,threads_8/records_8,keygen_vk + keygen_pk (ms),,,OK,1581.092,1578.374,1618.218,10
+performance,threads_8/records_8,create_proof 真实证明生成 (ms),,,OK,2061.342,2062.838,2106.386,10
+performance,threads_8/records_8,verify_proof 真实证明验证 (ms),,,OK,47.115,46.310,51.934,10
+performance,threads_8/records_8,proof_bytes (bytes),,,OK,5824,,,10
