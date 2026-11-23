@@ -1,4 +1,10 @@
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.22s
+warning: error deleting lock file for incremental compilation session directory `\\?\D:\Research\agent-authz-halo2-exp\target\debug\incremental\agent_authz_halo2_exp-2fbok0bmptf66\s-hof8h9firf-0o86u3f.lock`: 拒绝访问。 (os error 5)
+
+warning: error deleting lock file for incremental compilation session directory `\\?\D:\Research\agent-authz-halo2-exp\target\debug\incremental\agent_authz_halo2_exp-0wmx93l23g2pj\s-hof8gwrnss-1034p81.lock`: 拒绝访问。 (os error 5)
+
+warning: `agent-authz-halo2-exp` (lib) generated 1 warning
+warning: `agent-authz-halo2-exp` (lib test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
      Running unittests src\lib.rs (target\debug\deps\agent_authz_halo2_exp-d673e78f01d11a4f.exe)
 
 running 5 tests
@@ -20,40 +26,50 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 running 13 tests
 test instance_layout_has_five_public_values ... ok
-test t10_grant_merkle_path_tampered_rejected ... ok
-test t7_request_action_outside_scope_rejected ... ok
-test t4_child_parent_id_tampered_rejected ... ok
-test t6_child_scope_exceeds_parent_rejected ... ok
 test t3_after_revoking_g1_g2_g4_accepted ... ok
-test t1_before_revocation_g1_g3_accepted ... ok
 test t5_issuer_continuity_violated_rejected ... ok
-test t8_expired_grant_rejected ... ok
+test t6_child_scope_exceeds_parent_rejected ... ok
 test t9_request_before_valid_from_rejected ... ok
+test t1_before_revocation_g1_g3_accepted ... ok
+test t8_expired_grant_rejected ... ok
+test t7_request_action_outside_scope_rejected ... ok
 test t2_revoked_g1_g3_rejected ... ok
 test t12_request_digest_tampered_rejected ... ok
+test t10_grant_merkle_path_tampered_rejected ... ok
+test t4_child_parent_id_tampered_rejected ... ok
 test t11_revocation_path_or_bit_tampered_rejected ... ok
 
-test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.31s
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.40s
 
      Running tests\test_poseidon_consistency.rs (target\debug\deps\test_poseidon_consistency-a6a720ed7cdc75f6.exe)
 
 running 4 tests
 test domain_separated_leaves_do_not_collide ... ok
-test gadget_and_off_circuit_poseidon_agree ... ok
 test sparse_registry_slots_open_correctly ... ok
+test gadget_and_off_circuit_poseidon_agree ... ok
 test registry_roots_and_paths_are_consistent ... ok
 
-test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
 
      Running tests\test_proof_roundtrip.rs (target\debug\deps\test_proof_roundtrip-ed3480b754242868.exe)
 
-running 2 tests
+running 3 tests
+test t13_real_proof_revoked_path_cannot_yield_valid_proof has been running for over 60 seconds
 test t1_real_proof_before_revocation has been running for over 60 seconds
 test t3_real_proof_after_revoking_g1 has been running for over 60 seconds
+test t13_real_proof_revoked_path_cannot_yield_valid_proof ... ok
 test t1_real_proof_before_revocation ... ok
 test t3_real_proof_after_revoking_g1 ... ok
 
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 121.73s
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 115.50s
+
+     Running tests\test_r1_revocation.rs (target\debug\deps\test_r1_revocation-d2aa295f19da452d.exe)
+
+running 2 tests
+test t14_independent_path_survives_revocation_with_matching_roots ... ok
+test t13_revoked_real_witness_matching_roots_rejected_by_not_revoked_gate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.07s
 
      Running tests\test_reference.rs (target\debug\deps\test_reference-beaf30b1f5741d66.exe)
 
@@ -63,7 +79,7 @@ test reference_revocation_and_request_action_are_checked ... ok
 test reference_never_claims_deny_completeness ... ok
 test reference_revocation_scenario_matches_task_spec ... ok
 
-test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
 
    Doc-tests agent_authz_halo2_exp
 

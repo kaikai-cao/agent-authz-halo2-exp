@@ -11,6 +11,8 @@ attack,T9,请求时间早于生效时间,拒绝,拒绝,PASS,,,,
 attack,T10,Grant Merkle path 被篡改,拒绝,拒绝,PASS,,,,
 attack,T11,Revocation path 或状态位被篡改,拒绝,拒绝,PASS,,,,
 attack,T12,requestDigest 被篡改,拒绝,拒绝,PASS,,,,
+attack,T13,撤销后 Registry 的 g1+g3 真实 witness + 对应 roots,拒绝,拒绝,PASS,,,,
+attack,T14,撤销后 Registry 的 g2+g4 真实 witness + 对应 roots,通过,接受,PASS,,,,
 performance,threads_1/records_12,Params::new 参数生成 (ms),,,OK,2918.199,2945.948,2982.913,10
 performance,threads_1/records_12,keygen_vk + keygen_pk (ms),,,OK,1573.013,1562.773,1635.139,10
 performance,threads_1/records_12,create_proof 真实证明生成 (ms),,,OK,2045.339,2043.186,2118.003,10

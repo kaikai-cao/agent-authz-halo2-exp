@@ -42,15 +42,19 @@ fn t1_before_revocation_g1_g3_accepted() {
 
 #[test]
 fn t2_revoked_g1_g3_rejected() {
-    let before = Registry::fixed(&[]).unwrap();
+    // R1: use the REAL witnesses from the after-revocation registry and its
+    // matching roots (not a stale before-witness that fails on root mismatch).
+    // This tests the revocation constraint itself; T13 further attributes the
+    // failure specifically to the `not-revoked` gate.
     let after = Registry::fixed(&["g1"]).unwrap();
     let request = Request::fixed();
     let public = PublicInputs::new(after.grant_root, after.revoke_root, &request);
     let witness = PathWitness {
-        g0: before.witness("g1").unwrap(),
-        g1: before.witness("g3").unwrap(),
+        g0: after.witness("g1").unwrap(),
+        g1: after.witness("g3").unwrap(),
         request: request.fields(),
     };
+    assert!(witness.g0.revoked, "g1 must be revoked in after-registry");
     assert!(!mock_accepts(&AuthPathCircuit::new(public, witness)));
 }
 

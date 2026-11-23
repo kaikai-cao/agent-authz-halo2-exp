@@ -19,6 +19,15 @@ use rand::{rngs::StdRng, SeedableRng};
 const K: u32 = 12;
 
 fn build_proof(public: PublicInputs, witness: PathWitness) -> Vec<u8> {
+    build_proof_result(public, witness).expect("create_proof")
+}
+
+/// Like `build_proof` but returns the raw `create_proof` result so negative
+/// tests can record the exact Halo2 error without panicking.
+fn build_proof_result(
+    public: PublicInputs,
+    witness: PathWitness,
+) -> Result<Vec<u8>, halo2_proofs::plonk::Error> {
     let params = Params::<vesta::Affine>::new(K);
     let shape = AuthPathCircuit::for_keygen(public);
     let vk = keygen_vk(&params, &shape).expect("keygen_vk");
@@ -38,9 +47,8 @@ fn build_proof(public: PublicInputs, witness: PathWitness) -> Vec<u8> {
         &all_instances,
         StdRng::seed_from_u64(20261123),
         &mut transcript,
-    )
-    .expect("create_proof");
-    transcript.finalize()
+    )?;
+    Ok(transcript.finalize())
 }
 
 fn verify(public: PublicInputs, proof: &[u8]) -> bool {
@@ -88,4 +96,44 @@ fn t3_real_proof_after_revoking_g1() {
     let mut altered = public;
     altered.request_digest += F::ONE;
     assert!(!verify(altered, &proof));
+}
+
+/// T13 real-proof negative construction.  Uses the after-revocation registry's
+/// real g1+g3 witnesses with matching public roots.  We record the RAW Halo2
+/// outcome: either `create_proof` fails on the unsatisfied `not-revoked`
+/// constraint, or a proof is produced but `verify_proof` rejects it.  We never
+/// describe a verifier rejection as "a valid proof was rejected".
+#[test]
+fn t13_real_proof_revoked_path_cannot_yield_valid_proof() {
+    let reg = Registry::fixed(&["g1"]).unwrap();
+    let request = Request::fixed();
+    let public = PublicInputs::new(reg.grant_root, reg.revoke_root, &request);
+    let witness = PathWitness {
+        g0: reg.witness("g1").unwrap(), // revoked = true
+        g1: reg.witness("g3").unwrap(),
+        request: request.fields(),
+    };
+    assert!(witness.g0.revoked);
+
+    match build_proof_result(public, witness) {
+        Err(err) => {
+            // Halo2 refused at proof construction: record the exact error.
+            eprintln!("T13 create_proof error (raw): {}", err);
+            let msg = format!("{}", err);
+            assert!(
+                !msg.is_empty(),
+                "expected a non-empty constraint error for the revoked path"
+            );
+        }
+        Ok(proof) => {
+            // Halo2 produced a proof despite the unsatisfied witness; the
+            // authoritative check is then verifier rejection.
+            eprintln!("T13 create_proof succeeded; falling back to verifier check");
+            assert!(!proof.is_empty());
+            assert!(
+                !verify(public, &proof),
+                "a proof for a revoked path must not verify"
+            );
+        }
+    }
 }

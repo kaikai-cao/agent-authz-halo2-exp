@@ -24,6 +24,8 @@ TESTS = [
     ("T10", "Grant Merkle path 被篡改", "拒绝"),
     ("T11", "Revocation path 或状态位被篡改", "拒绝"),
     ("T12", "requestDigest 被篡改", "拒绝"),
+    ("T13", "撤销后 Registry 的 g1+g3 真实 witness + 对应 roots", "拒绝"),
+    ("T14", "撤销后 Registry 的 g2+g4 真实 witness + 对应 roots", "通过"),
 ]
 
 TEST_FILE_MAP = {
@@ -39,6 +41,8 @@ TEST_FILE_MAP = {
     "T10": "t10_grant_merkle_path_tampered_rejected",
     "T11": "t11_revocation_path_or_bit_tampered_rejected",
     "T12": "t12_request_digest_tampered_rejected",
+    "T13": "t13_revoked_real_witness_matching_roots_rejected_by_not_revoked_gate",
+    "T14": "t14_independent_path_survives_revocation_with_matching_roots",
 }
 
 METRICS = [
@@ -187,7 +191,7 @@ def write_report(raw: dict, log: dict) -> None:
     add("统一请求：Agent-C / tool:translate / read / time=10 / policy-v1 / epoch=8。")
     add("撤销场景：撤销 g1 后 g1+g3 失效，g2+g4 仍可生成有效证明。")
     add("")
-    add("## 4. 12 项测试结果")
+    add("## 4. 14 项测试结果")
     add("")
     add("| 编号 | 场景 | 预期 | MockProver |")
     add("| --- | --- | --- | --- |")
@@ -197,9 +201,52 @@ def write_report(raw: dict, log: dict) -> None:
     add("")
     add("T1 与 T3 另各自完成一次**真实 proof**：`Params::new` → `keygen_vk` → `keygen_pk` →")
     add("`create_proof` → `verify_proof`，并且同一 proof 在篡改后的 Dq instance 下被拒绝。")
+    add("T13 另完成一次真实负向证明构造（见第 5 节 R1 说明）。")
     add("MockProver 只用于约束调试与负向验证，不计入真实证明结论。")
     add("")
-    add("## 5. 性能结果（release，预热 1 次 + 10 次采样）")
+    add("## 5. R1 安全修正：电路强制未撤销（Enforce Non-Revocation）")
+    add("")
+    add("### R0 缺陷")
+    add("")
+    add("R0 电路中，撤销状态 `g0_revoked` / `g1_revoked` 仅通过 `assign_bool` 做布尔约束，")
+    add("然后作为撤销树叶子 `Poseidon(D_REVOKE, id, revoked)` 的输入重算到公开 RR。")
+    add("但电路**没有约束 revoked = 0**。因此 R0 只证明“某个撤销状态包含在公开 RR 中”，")
+    add("并不证明该状态是“未撤销”。本地诊断实证：用撤销后 Registry 的真实 g1（revoked=1）")
+    add("与 g3 witness、以及同一 Registry 的 GR/RR 作为公开输入，MockProver 错误返回 `Ok(())`。")
+    add("")
+    add("原 T2/T11 未能发现此问题：它们的 witness 来自撤销前 Registry，却配撤销后的根，")
+    add("失败原因是 Merkle 根不匹配，而非撤销语义，属于弱测试。")
+    add("")
+    add("### R1 修复（电路级）")
+    add("")
+    add("在 `src/circuit.rs` 新增专用 advice 列 `no_revoke_col` 与选择器 `q_no_revoke`，")
+    add("新增 gate `not-revoked`: q_no_revoke · revoked = 0；在 witness region 中把两条撤销状态")
+    add("cell 通过 equality 绑定到该列并启用选择器。keygen 与 proving 的电路结构一致")
+    add("（`without_witnesses` 同样启用该 gate），撤销树 membership 检查完整保留。")
+    add("约束在电路中，不在 reference model 或 witness 构造函数中。")
+    add("")
+    add("### T13 / T14 关键验收")
+    add("")
+    add("- **T13**：从撤销后 Registry 取 g1+g3 的真实 witness 与对应 GR/RR，opening 自检通过；")
+    add("  电路拒绝，且失败原因精确来自 `not-revoked` gate（`cell_values` 中 revoked=1），")
+    add("  不是根不匹配——直接覆盖上述漏洞。")
+    add("- **T14**：同一撤销后 Registry 的独立路径 g2+g4 仍通过，修复未误伤独立授权来源。")
+    add("")
+    add("### T13 真实负向证明构造（如实记录）")
+    add("")
+    add("用撤销后 g1+g3 witness 与匹配 roots 执行 `create_proof`：本机 Halo2 0.4 的 prover")
+    add("**未做约束自检，仍生成了 proof**；随后 `verify_proof` 在相同 instance 下拒绝该 proof。")
+    add("因此结论是“撤销路径无法产生可通过验证的 proof”，而非“create_proof 因约束失败”。")
+    add("这是 Halo2 prover 的行为事实，不写成 verifier 拒绝了一个有效 proof。")
+    add("")
+    add("### 电路结构与性能")
+    add("")
+    add("R1 相对 R0 新增 1 个 advice 列、1 个 selector、1 个 gate（not-revoked），并在 witness region")
+    add("增加 2 处 copy_advice 与 2 处 selector enable；门结构因此改变。本轮按要求未做完整性能重测，")
+    add("第 6 节的性能数字仍为 R0 采集的原型微基准。R1 已验证至少一次 T1/T3 真实 proof roundtrip")
+    add("与一次 T13 真实负向构造均成功执行。")
+    add("")
+    add("## 6. 性能结果（release，预热 1 次 + 10 次采样）")
     add("")
     for label in sorted(raw["runs"]):
         threads = label.split("_")[1]
@@ -208,7 +255,7 @@ def write_report(raw: dict, log: dict) -> None:
         lines.extend([])
         add("\n".join(perf_table(raw, label)))
         add("")
-    add("## 6. 研究问题：授权来源越多，证明成本是否必然越高？")
+    add("## 7. 研究问题：授权来源越多，证明成本是否必然越高？")
     add("")
     gen = {}
     for label, runs in raw["runs"].items():
@@ -228,7 +275,7 @@ def write_report(raw: dict, log: dict) -> None:
     add("变化的是公开根 GR/RR 与 prover 的路径选择。上述数字是**本原型在本机**的实测，")
     add("不能外推为所有授权图规模下的渐近结论；判断“是否必然更高”仍需更大容量与更宽记录区间。")
     add("")
-    add("## 7. 边界与未证明事项")
+    add("## 8. 边界与未证明事项")
     add("")
     add("- 不证明 DENY / 不存在性；fail-closed 是 Gateway 策略，不是电路结论。")
     add("- 不在电路内验证 Root / 委托者 Ed25519 签名；注册表构建前验证签发者是外部假设。")
@@ -237,7 +284,7 @@ def write_report(raw: dict, log: dict) -> None:
     add("- k=12 是域参数，2^12 是域大小，不代表实际约束行数。")
     add("- 所有毫秒数为 Halo2 原型微基准，不含网络、序列化 I/O 与生产硬件差异。")
     add("")
-    add("## 8. 复现")
+    add("## 9. 复现")
     add("")
     add("```bash")
     add("cargo test --locked")

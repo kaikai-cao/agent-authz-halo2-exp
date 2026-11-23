@@ -70,12 +70,16 @@ pub struct AuthConfig {
     add: [Column<Advice>; 3],
     scope_cols: [Column<Advice>; 12],
     sel: [Column<Advice>; 5],
+    /// Dedicated column for the "not revoked" constraint (R1 security fix).
+    no_revoke_col: Column<Advice>,
     instance: Column<Instance>,
     q_bool: Selector,
     q_byte: Selector,
     q_add: Selector,
     q_scope: Selector,
     q_select: Selector,
+    /// R1: enforces revocation status == 0 on both grants of the path.
+    q_no_revoke: Selector,
 }
 
 fn assign_vec(
@@ -381,9 +385,10 @@ impl Circuit<F> for AuthPathCircuit {
             .collect::<Vec<_>>()
             .try_into()
             .unwrap();
+        let no_revoke_col = meta.advice_column();
         let instance = meta.instance_column();
 
-        for col in [scratch, bool_col, byte_col]
+        for col in [scratch, bool_col, byte_col, no_revoke_col]
             .into_iter()
             .chain(add)
             .chain(scope_cols)
@@ -398,11 +403,23 @@ impl Circuit<F> for AuthPathCircuit {
         let q_add = meta.selector();
         let q_scope = meta.selector();
         let q_select = meta.selector();
+        let q_no_revoke = meta.selector();
 
         meta.create_gate("boolean", |meta| {
             let q = meta.query_selector(q_bool);
             let a = meta.query_advice(bool_col, Rotation::cur());
             Constraints::with_selector(q, vec![a.clone() * a.clone() - a])
+        });
+
+        // R1 security fix: the revocation status of both grants on the path
+        // must be exactly zero.  Without this gate the circuit only proves
+        // that a revocation leaf opens to the public RR root, not that the
+        // leaf says "not revoked".  `no_revoke_col` is equality-bound to the
+        // boolean `revoked` witness cell, so this gate forces revoked == 0.
+        meta.create_gate("not-revoked", |meta| {
+            let q = meta.query_selector(q_no_revoke);
+            let r = meta.query_advice(no_revoke_col, Rotation::cur());
+            Constraints::with_selector(q, vec![r])
         });
 
         meta.create_gate("byte8", |meta| {
@@ -486,12 +503,14 @@ impl Circuit<F> for AuthPathCircuit {
             add,
             scope_cols,
             sel,
+            no_revoke_col,
             instance,
             q_bool,
             q_byte,
             q_add,
             q_scope,
             q_select,
+            q_no_revoke,
         }
     }
 
@@ -599,6 +618,16 @@ impl Circuit<F> for AuthPathCircuit {
                 let g1_revoked = assign_bool(
                     &config, &mut region, &mut sr, &mut br,
                     if g1.revoked { F::ONE } else { F::ZERO }, known, "g1_revoked")?;
+
+                // R1 security fix: equality-bind both revocation status cells
+                // into the dedicated column and enable `not-revoked`, forcing
+                // revoked == 0 in-circuit (keygen and proving share this shape).
+                g0_revoked.copy_advice(
+                    || "g0_revoked_no_revoke", &mut region, config.no_revoke_col, 0)?;
+                g1_revoked.copy_advice(
+                    || "g1_revoked_no_revoke", &mut region, config.no_revoke_col, 1)?;
+                config.q_no_revoke.enable(&mut region, 0)?;
+                config.q_no_revoke.enable(&mut region, 1)?;
 
                 // Both trees must use the very same slot index.
                 for i in 0..TREE_DEPTH {
